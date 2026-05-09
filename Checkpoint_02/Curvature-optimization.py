@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 def main(args=None):
-    eta = 0.01
+    eta = 0.5
     x = np.array([1, 2, 3, 4])
     y = np.array([1, 3, 2, 3], dtype = float)
     A = np.zeros((12, 12))
@@ -21,6 +21,7 @@ def main(args=None):
         eqn += 1
     for i in range(1,3):
         dx = x[i] - x[i-1]
+
         A[eqn, 4*(i-1)+1] = 1
         A[eqn, 4*(i-1)+2] = 2*dx
         A[eqn, 4*(i-1)+3] = 3*dx**2
@@ -53,20 +54,6 @@ def main(args=None):
         yi_vals = computePoly(i, xi_vals)
         X.extend(xi_vals)
         Y.extend(yi_vals)
-    
-    def firstDerivative(i, xi):
-        a = coeffs[4*i]
-        b = coeffs[4*i+1]
-        c = coeffs[4*i+2]
-        d = coeffs[4*i+3]
-        return b + 2*c*(xi - x[i]) + 3*d*(xi - x[i])**2
-    
-    def secondDerivative(i, xi):
-        a = coeffs[4*i]
-        b = coeffs[4*i+1]
-        c = coeffs[4*i+2]
-        d = coeffs[4*i+3]
-        return 2*c + 6*d*(xi - x[i])
  
     def computeCurvature(y_input):
       
@@ -76,10 +63,20 @@ def main(args=None):
 
       for i in range(3):
 
-       B_temp[eqn] = y_input[i]
-       eqn += 1
-       B_temp[eqn] = y_input[i+1]
-       eqn += 1
+        B_temp[eqn] = y_input[i]
+        eqn += 1
+
+        B_temp[eqn] = y_input[i+1]
+        eqn += 1
+
+      eqn += 2
+      eqn += 2
+
+      B_temp[eqn] = 0
+      eqn += 1
+
+      B_temp[eqn] = 0
+
       coeffs_temp = np.linalg.solve(A, B_temp)
 
       total_curvature = 0
@@ -106,12 +103,17 @@ def main(args=None):
     J = computeCurvature(y)
     
     def computeGradient(index):
-      
+      eps = 0.001
       J1 = computeCurvature(y)
       y_temp = y.copy()
-      y_temp[index] += eta
+      y_temp[index] += eps
       J2 = computeCurvature(y_temp)
-      gradient = (J2 - J1)/eta
+      
+      print(J1)
+      print(J2)
+      print(J2 - J1)
+
+      gradient = (J2 - J1)/eps
       return gradient
  
     grad1 = computeGradient(1)
@@ -121,17 +123,21 @@ def main(args=None):
     print(" ")
     print(grad2)
     print("\n")
-
+    
+   
     y_opt = y.copy()
+
     y_opt[1] -= eta*grad1
     y_opt[2] -= eta*grad2
 
     B_opt = np.zeros(12)
-    
+
     eqn = 0
     for i in range(3):
+
       B_opt[eqn] = y_opt[i]
       eqn += 1
+
       B_opt[eqn] = y_opt[i+1]
       eqn += 1
 
@@ -141,6 +147,7 @@ def main(args=None):
     Y_opt = []
 
     for i in range(3):
+
        xi_vals = np.linspace(x[i], x[i+1], 50)
 
        a = coeffs_opt[4*i]
@@ -163,3 +170,4 @@ def main(args=None):
     plt.scatter(x, y_opt, color='red')
     plt.legend()
     plt.show()
+
