@@ -1,11 +1,10 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-eta = 0.01
-
 def main(args=None):
+    eta = 0.01
     x = np.array([1, 2, 3, 4])
-    y = np.array([1, 3, 2, 3])
+    y = np.array([1, 3, 2, 3], dtype = float)
     A = np.zeros((12, 12))
     B = np.zeros(12)
     eqn = 0
@@ -69,7 +68,20 @@ def main(args=None):
         d = coeffs[4*i+3]
         return 2*c + 6*d*(xi - x[i])
  
-    def computeCurvature():
+    def computeCurvature(y_input):
+      
+      B_temp = np.zeros(12)
+
+      eqn = 0
+
+      for i in range(3):
+
+       B_temp[eqn] = y_input[i]
+       eqn += 1
+       B_temp[eqn] = y_input[i+1]
+       eqn += 1
+      coeffs_temp = np.linalg.solve(A, B_temp)
+
       total_curvature = 0
 
       for i in range(3):
@@ -78,8 +90,12 @@ def main(args=None):
 
         for xi in xi_vals:
 
-            yd = firstDerivative(i, xi)
-            y2d = secondDerivative(i, xi)
+            b = coeffs_temp[4*i+1]
+            c = coeffs_temp[4*i+2]
+            d = coeffs_temp[4*i+3]
+
+            yd = b + 2*c*(xi - x[i]) + 3*d*(xi - x[i])**2
+            y2d = 2*c + 6*d*(xi - x[i])
 
             kappa = abs(y2d)/(1 + yd**2)**1.5
 
@@ -87,22 +103,35 @@ def main(args=None):
 
       return total_curvature
       
-    J = computeCurvature()
-     
-    y_opt = y.copy()
+    J = computeCurvature(y)
+    
+    def computeGradient(index):
+      
+      J1 = computeCurvature(y)
+      y_temp = y.copy()
+      y_temp[index] += eta
+      J2 = computeCurvature(y_temp)
+      gradient = (J2 - J1)/eta
+      return gradient
  
-    y_opt[1] -= eta
-    y_opt[2] += eta
+    grad1 = computeGradient(1)
+    grad2 = computeGradient(2)
+    
+    print(grad1)
+    print(" ")
+    print(grad2)
+    print("\n")
+
+    y_opt = y.copy()
+    y_opt[1] -= eta*grad1
+    y_opt[2] -= eta*grad2
 
     B_opt = np.zeros(12)
-
+    
     eqn = 0
-
     for i in range(3):
-
       B_opt[eqn] = y_opt[i]
       eqn += 1
-
       B_opt[eqn] = y_opt[i+1]
       eqn += 1
 
@@ -112,7 +141,6 @@ def main(args=None):
     Y_opt = []
 
     for i in range(3):
-
        xi_vals = np.linspace(x[i], x[i+1], 50)
 
        a = coeffs_opt[4*i]
@@ -121,11 +149,11 @@ def main(args=None):
        d = coeffs_opt[4*i+3]
 
        yi_vals = (
-        y_opt[i]
+        a
         + b*(xi_vals-x[i])
         + c*(xi_vals-x[i])**2
         + d*(xi_vals-x[i])**3
-       )
+)
        X_opt.extend(xi_vals)
        Y_opt.extend(yi_vals)
 
