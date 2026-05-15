@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 def main(args=None):
-    eta = 0.5
+    eta = 1
     x = np.array([1, 2, 3, 4])
     y = np.array([1, 3, 2, 3], dtype = float)
     A = np.zeros((12, 12))
@@ -69,9 +69,6 @@ def main(args=None):
         B_temp[eqn] = y_input[i+1]
         eqn += 1
 
-      eqn += 2
-      eqn += 2
-
       B_temp[eqn] = 0
       eqn += 1
 
@@ -103,7 +100,7 @@ def main(args=None):
     J = computeCurvature(y)
     
     def computeGradient(index):
-      eps = 0.001
+      eps = 0.000001
       J1 = computeCurvature(y)
       y_temp = y.copy()
       y_temp[index] += eps
